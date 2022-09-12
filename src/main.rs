@@ -58,7 +58,8 @@ fn construct_huffman_tree(text: &String): Rc<HuffmanNode> {
     quick_sort(&mut leaves, &|x,y| x.weight < y.weight);
     let intermediate_nodes = Vec::new();
     while intermediate_nodes.len() > 1 {
-        (one, two) = take_two_smallest(leaves, intermediate_nodes);
+        let first = take_smallest(leaves, intermediate_nodes);
+        let second = take_smallest(leaves, intermediate_nodes);
         let new_node = HuffmanNode {
             weight: one.weight + two.weight,
             symbol: None,
@@ -69,6 +70,10 @@ fn construct_huffman_tree(text: &String): Rc<HuffmanNode> {
     }
 
     Rc::new(intermediate_nodes.pop())
+}
+
+fn take_smallest(first: Vec<HuffmanNode>, second: Vec<HuffmanNode>) -> HuffmanNode {
+    first.is_empty() || first[0].weight > second[0].weight ? second.pop_front().unwrap() : first.pop_front().unwrap()
 }
 
 fn get_huffman_encoding(text: &String) -> HashMap<char, HuffmanUnitCode> {
