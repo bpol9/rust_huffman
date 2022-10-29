@@ -57,9 +57,9 @@ fn construct_huffman_tree(text: &String): Rc<HuffmanNode> {
     let leaves = get_huffman_leaves(text);
     quick_sort(&mut leaves, &|x,y| x.weight < y.weight);
     let intermediate_nodes = Vec::new();
-    while intermediate_nodes.len() > 1 {
-        let first = take_smallest(leaves, intermediate_nodes);
-        let second = take_smallest(leaves, intermediate_nodes);
+    while leaves.len() > 0 || intermediate_nodes.len() > 1 {
+        let one = take_smallest(leaves, intermediate_nodes);
+        let two = take_smallest(leaves, intermediate_nodes);
         let new_node = HuffmanNode {
             weight: one.weight + two.weight,
             symbol: None,
