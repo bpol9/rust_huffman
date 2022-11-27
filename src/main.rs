@@ -30,6 +30,18 @@ impl HuffmanEncoding {
     }
 }
 
+impl HuffmanUnitCode {
+    fn add_bit_zero(&mut self) {
+        self.code = self.code << 1;
+        self.number_of_bits += 1;
+    }
+
+    fn add_bit_one(&mut self) {
+        self.code = (self.code << 1) | 1;
+        self.number_of_bits += 1;
+    }
+}
+
 fn compute_frequencies(text: &String) -> HashMap<char, u32> {
     let mut result = HashMap::new();
     for c in text.chars() {
@@ -82,38 +94,46 @@ fn take_smallest(first: &mut Vec<HuffmanNode>, second: &mut Vec<HuffmanNode>) ->
     //first.is_empty() || first[0].weight > second[0].weight ? second.pop_front().unwrap() : first.pop_front().unwrap()
 }
 
-//fn dfs_huffman_tree(node: Rc<HuffmanNode>, curr_unit_code: HuffmanUnitCode, result: &mut HashMap<char, HuffmanUnitCode>) {
-//    if node.left.is_none() && node.right.is_none() {
-//        result.insert(node.code.clone().unwrap(), curr_unit_code);
-//        return;
-//    }
-//
-//    if !node.left.is_none() {
-//        curr_unit_code.add_zero_bit();
-//        dfs_huffman_tree(node.left.clone().unwrap(), curr_unit_code, result);
-//    }
-//    if !node.right.is_none() {
-//        curr_unit_code.add_one_bit();
-//        dfs_huffman_tree(node.right.clone().unwrap(), curr_unit_code, result);
-//    }
-//
-//}
+fn dfs_huffman_tree(node: Rc<HuffmanNode>, curr_unit_code: HuffmanUnitCode, result: &mut HashMap<char, HuffmanUnitCode>) {
+    if node.left.is_none() && node.right.is_none() {
+        result.insert(node.symbol.clone().unwrap(), curr_unit_code);
+        return;
+    }
 
-//fn get_encoding_from_huffman_tree(tree: Rc<HuffmanNode>) -> HashMap<char, HuffmanUnitCode> {
-//    let mut result = HashMap::new();
-//    let curr_enc = HuffmanUnitCode {
-//        code: 0,
-//        number_of_bits: 0
-//    };
-//    dfs_huffman_tree(tree, curr_enc, &mut result);
-//    result
-//}
+    if !node.left.is_none() {
+        let mut left_unit_code = HuffmanUnitCode {
+            code: curr_unit_code.code,
+            number_of_bits: curr_unit_code.number_of_bits
+        };
+        left_unit_code.add_bit_zero();
+        dfs_huffman_tree(node.left.clone().unwrap(), left_unit_code, result);
+    }
+    if !node.right.is_none() {
+        let mut right_unit_code = HuffmanUnitCode {
+            code: curr_unit_code.code,
+            number_of_bits: curr_unit_code.number_of_bits
+        };
+        right_unit_code.add_bit_one();
+        dfs_huffman_tree(node.right.clone().unwrap(), curr_unit_code, result);
+    }
 
-//fn get_huffman_encoding(text: &String) -> HashMap<char, HuffmanUnitCode> {
-//    let tree = construct_huffman_tree(text);
-//    let encoding = get_encoding_from_huffman_tree(tree);
-//    encoding
-//}
+}
+
+fn get_encoding_from_huffman_tree(tree: Rc<HuffmanNode>) -> HashMap<char, HuffmanUnitCode> {
+    let mut result = HashMap::new();
+    let curr_enc = HuffmanUnitCode {
+        code: 0,
+        number_of_bits: 0
+    };
+    dfs_huffman_tree(tree, curr_enc, &mut result);
+    result
+}
+
+fn get_huffman_encoding(text: &String) -> HashMap<char, HuffmanUnitCode> {
+    let tree = construct_huffman_tree(text);
+    let encoding = get_encoding_from_huffman_tree(tree);
+    encoding
+}
 
 
 fn main() {
@@ -157,6 +177,7 @@ mod test {
 
     use super::compute_frequencies;
     use super::get_huffman_leaves;
+    use super::HuffmanUnitCode;
 
     #[test]
     fn test_freq_computation() {
@@ -181,34 +202,58 @@ mod test {
     }
 
 
-//    #[test]
-//    fn test_encoding() {
-//        let text = String::from("mmmmaaarrrthhaa");
-//        let result = get_huffman_encoding(text);
-//        let m_opt = result.get(&'m');
-//        assert!(!m_opt.is_none());
-//        let m_enc = m_opt.unwrap();
-//        assert_eq!(m_enc.code, 2);
-//        assert_eq!(m_enc.number_of_bits, 2);
-//        let a_opt = result.get(&'a');
-//        assert!(!a_opt.is_none());
-//        let a_enc = a_opt.unwrap();
-//        assert_eq!(a_enc.code, 3);
-//        assert_eq!(a_enc.number_of_bits, 2);
-//        let t_opt = result.get(&'t');
-//        assert!(!t_opt.is_none());
-//        let t_enc = t_opt.unwrap();
-//        assert_eq!(t_enc.code, 2);
-//        assert_eq!(t_enc.number_of_bits, 3);
-//        let h_opt = result.get(&'h');
-//        assert!(!h_opt.is_none());
-//        let h_enc = h_opt.unwrap();
-//        assert_eq!(h_enc.code, 3);
-//        assert_eq!(h_enc.number_of_bits, 3);
-//        let r_opt = result.get(&'r');
-//        assert!(!r_opt.is_none());
-//        let r_enc = r_opt.unwrap();
-//        assert_eq!(r_enc.code, 0);
-//        assert_eq!(r_enc.number_of_bits, 2);
-//    }
+    #[test]
+    fn test_huffman_unit_code_add_bit_zero() {
+        let mut unit_code = HuffmanUnitCode {
+            code: 5,
+            number_of_bits: 3
+        };
+        unit_code.add_bit_zero();
+        assert_eq!(10, unit_code.code);
+        assert_eq!(4, unit_code.number_of_bits);
+    }
+
+    #[test]
+    fn test_huffman_unit_code_add_bit_one() {
+        let mut unit_code = HuffmanUnitCode {
+            code: 0,
+            number_of_bits: 0
+        };
+        unit_code.add_bit_one();
+        assert_eq!(1, unit_code.code);
+        assert_eq!(1, unit_code.number_of_bits);
+    }
+
+    /*
+    #[test]
+    fn test_encoding() {
+        let text = String::from("mmmmaaarrrthhaa");
+        let result = get_huffman_encoding(text);
+        let m_opt = result.get(&'m');
+        assert!(!m_opt.is_none());
+        let m_enc = m_opt.unwrap();
+        assert_eq!(m_enc.code, 2);
+        assert_eq!(m_enc.number_of_bits, 2);
+        let a_opt = result.get(&'a');
+        assert!(!a_opt.is_none());
+        let a_enc = a_opt.unwrap();
+        assert_eq!(a_enc.code, 3);
+        assert_eq!(a_enc.number_of_bits, 2);
+        let t_opt = result.get(&'t');
+        assert!(!t_opt.is_none());
+        let t_enc = t_opt.unwrap();
+        assert_eq!(t_enc.code, 2);
+        assert_eq!(t_enc.number_of_bits, 3);
+        let h_opt = result.get(&'h');
+        assert!(!h_opt.is_none());
+        let h_enc = h_opt.unwrap();
+        assert_eq!(h_enc.code, 3);
+        assert_eq!(h_enc.number_of_bits, 3);
+        let r_opt = result.get(&'r');
+        assert!(!r_opt.is_none());
+        let r_enc = r_opt.unwrap();
+        assert_eq!(r_enc.code, 0);
+        assert_eq!(r_enc.number_of_bits, 2);
+    }
+    */
 }
