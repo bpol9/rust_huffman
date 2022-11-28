@@ -137,7 +137,7 @@ fn get_huffman_encoding(text: &String) -> HashMap<char, HuffmanUnitCode> {
 
 
 fn main() {
-    println!("Hello, world!");
+    println!("Hello, world!!!");
 }
 
 fn quick_sort<T,F>(v: &mut [T], f: &F)
