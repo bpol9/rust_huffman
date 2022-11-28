@@ -86,7 +86,7 @@ fn construct_huffman_tree(text: &String) -> Rc<HuffmanNode> {
 }
 
 fn take_smallest(first: &mut Vec<HuffmanNode>, second: &mut Vec<HuffmanNode>) -> HuffmanNode {
-    if first.is_empty() || first[0].weight > second[0].weight {
+    if first.is_empty() || (!second.is_empty() && first[0].weight > second[0].weight) {
         second.remove(0)
     } else {
         first.remove(0)
@@ -114,7 +114,7 @@ fn dfs_huffman_tree(node: Rc<HuffmanNode>, curr_unit_code: HuffmanUnitCode, resu
             number_of_bits: curr_unit_code.number_of_bits
         };
         right_unit_code.add_bit_one();
-        dfs_huffman_tree(node.right.clone().unwrap(), curr_unit_code, result);
+        dfs_huffman_tree(node.right.clone().unwrap(), right_unit_code, result);
     }
 
 }
@@ -178,6 +178,7 @@ mod test {
     use super::compute_frequencies;
     use super::get_huffman_leaves;
     use super::HuffmanUnitCode;
+    use super::get_huffman_encoding;
 
     #[test]
     fn test_freq_computation() {
@@ -224,11 +225,10 @@ mod test {
         assert_eq!(1, unit_code.number_of_bits);
     }
 
-    /*
     #[test]
     fn test_encoding() {
         let text = String::from("mmmmaaarrrthhaa");
-        let result = get_huffman_encoding(text);
+        let result = get_huffman_encoding(&text);
         let m_opt = result.get(&'m');
         assert!(!m_opt.is_none());
         let m_enc = m_opt.unwrap();
@@ -255,5 +255,4 @@ mod test {
         assert_eq!(r_enc.code, 0);
         assert_eq!(r_enc.number_of_bits, 2);
     }
-    */
 }
