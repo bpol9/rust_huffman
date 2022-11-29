@@ -19,14 +19,22 @@ struct HuffmanUnitCode {
 }
 
 impl HuffmanEncoding {
-    
-    fn add_value(&mut self, data: u64, bits_number: u64) {
-        let taken_bits = self.number_of_bits & 63;
-        *self.data.last_mut().unwrap() |= (data >> taken_bits as u64);
-        if bits_number > 64 - taken_bits {
-            self.data.push(data << (64 - taken_bits) as u64);
+
+    fn add_value(&mut self, value: u64, number_of_bits: u64) {
+        if self.number_of_bits & 63 == 0 {
+            self.data.push(0);
+            if self.data.len() == 1 {
+                self.number_of_bits = 0;
+            }
         }
-        self.number_of_bits += bits_number;
+
+        let taken_bits = self.number_of_bits & 63;
+        let remaining_bits = 64 - taken_bits;
+        *self.data.last_mut().unwrap() |= value << taken_bits;
+        if number_of_bits > remaining_bits {
+            self.data.push(value >> remaining_bits);
+        }
+        self.number_of_bits += number_of_bits;
     }
 }
 
@@ -179,6 +187,7 @@ mod test {
     use super::get_huffman_leaves;
     use super::HuffmanUnitCode;
     use super::get_huffman_encoding;
+    use super::HuffmanEncoding;
 
     #[test]
     fn test_freq_computation() {
@@ -254,5 +263,28 @@ mod test {
         let r_enc = r_opt.unwrap();
         assert_eq!(r_enc.code, 0);
         assert_eq!(r_enc.number_of_bits, 2);
+    }
+
+    #[test]
+    fn test_add_value_huffman_encoding() {
+        let mut enc = HuffmanEncoding {
+            data: Vec::new(),
+            number_of_bits: 0
+        };
+        enc.add_value(3, 2);
+        assert_eq!(enc.data.len(), 1);
+        assert_eq!(enc.data.get(0), Some(&3));
+        enc.add_value(1, 2);
+        assert_eq!(enc.data.len(), 1);
+        assert_eq!(enc.data.get(0), Some(&7));
+        let new_value = 1 << 59;
+        let expected = (1 << 63) + 7;
+        enc.add_value(new_value, 60);
+        assert_eq!(enc.data.len(), 1);
+        assert_eq!(enc.data.get(0), Some(&expected));
+        enc.add_value(2, 2);
+        assert_eq!(enc.data.len(), 2);
+        assert_eq!(enc.data.get(0), Some(&expected));
+        assert_eq!(enc.data.get(1), Some(&2));
     }
 }
