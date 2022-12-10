@@ -143,6 +143,22 @@ fn get_huffman_encoding(text: &String) -> HashMap<char, HuffmanUnitCode> {
     encoding
 }
 
+fn encode_with_huffman(text: &String) -> HuffmanEncoding {
+    let map = get_huffman_encoding(text);
+    let mut result = HuffmanEncoding {
+        data: Vec::new(),
+        number_of_bits: 0
+    };
+    let mut unit_code: &HuffmanUnitCode;
+    for c in text.chars() {
+        unit_code = map.get(&c).expect("character not found in map!");
+        result.add_value(unit_code.code, unit_code.number_of_bits.into());
+    }
+
+    result
+}
+
+
 
 fn main() {
     println!("Hello, world!!!");
@@ -188,6 +204,7 @@ mod test {
     use super::HuffmanUnitCode;
     use super::get_huffman_encoding;
     use super::HuffmanEncoding;
+    use super::encode_with_huffman;
 
     #[test]
     fn test_freq_computation() {
@@ -209,6 +226,15 @@ mod test {
         assert!(leaves.iter().any(|l| l.symbol == Some('r') && l.weight == 3));
         assert!(leaves.iter().any(|l| l.symbol == Some('t') && l.weight == 1));
         assert!(leaves.iter().any(|l| l.symbol == Some('h') && l.weight == 2));
+    }
+
+    #[test]
+    fn test_encode_with_huffman() {
+        let text = String::from("mmmmaaarrrthhaa");
+        let result = encode_with_huffman(&text);
+        assert_eq!(1, result.data.len());
+        assert_eq!(Some(&8281669546), result.data.get(0));
+        assert_eq!(33, result.number_of_bits);
     }
 
 
