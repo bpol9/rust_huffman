@@ -13,6 +13,7 @@ struct HuffmanNode {
     right: Option<Rc<HuffmanNode>>
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct HuffmanUnitCode {
     code: u64,
     number_of_bits: u8
@@ -36,6 +37,39 @@ impl HuffmanEncoding {
         }
         self.number_of_bits += number_of_bits;
     }
+
+    fn decode(&self, map: &HashMap<char, HuffmanUnitCode>) -> String {
+        let mut result = String::new();
+        let rev_map: HashMap<HuffmanUnitCode, char> = reverse_encoding_map(map);
+        let mut array_index = 0;
+        let mut bit_index = 0;
+        let mut unit_code = HuffmanUnitCode {
+            code: 0,
+            number_of_bits: 0
+        };
+        while array_index < self.data.len() {
+            if self.data.get(array_index).expect("Out of bound during decoding") & (1 << bit_index) == 0 {
+                unit_code.add_bit_msb(0);
+            } else {
+                unit_code.add_bit_msb(1);
+            }
+
+            bit_index = (bit_index + 1) % 64;
+            if bit_index == 0 {
+                array_index += 1;
+            }
+            match rev_map.get(&unit_code) {
+                Some(&c) => {
+                    result.push(c);
+                    unit_code.code = 0;
+                    unit_code.number_of_bits = 0;
+                },
+                None => ()
+            }
+        }
+
+        result
+    }
 }
 
 impl HuffmanUnitCode {
@@ -48,6 +82,23 @@ impl HuffmanUnitCode {
         self.code = (self.code << 1) | 1;
         self.number_of_bits += 1;
     }
+
+    fn add_bit_msb(&mut self, bit: u64) {
+        let mask = !(1 << self.number_of_bits);
+        self.code = self.code & mask; // set the new msb to 0
+        let msb = bit << self.number_of_bits;
+        self.code = self.code | msb;
+        self.number_of_bits += 1;
+    }
+}
+
+fn reverse_encoding_map(map: &HashMap<char, HuffmanUnitCode>) -> HashMap<HuffmanUnitCode, char> {
+    let mut result = HashMap::new();
+    for (symbol, code) in map {
+        result.insert(code.clone(), symbol.clone());
+    }
+
+    result
 }
 
 fn compute_frequencies(text: &String) -> HashMap<char, u32> {
@@ -205,6 +256,8 @@ mod test {
     use super::get_huffman_encoding;
     use super::HuffmanEncoding;
     use super::encode_with_huffman;
+    use super::reverse_encoding_map;
+    use std::collections::HashMap;
 
     #[test]
     fn test_freq_computation() {
@@ -312,5 +365,48 @@ mod test {
         assert_eq!(enc.data.len(), 2);
         assert_eq!(enc.data.get(0), Some(&expected));
         assert_eq!(enc.data.get(1), Some(&2));
+    }
+
+    #[test]
+    fn test_reverse_encoding_map() {
+        let code_1 = HuffmanUnitCode {
+            code: 2,
+            number_of_bits: 2
+        };
+        let code_2 = HuffmanUnitCode {
+            code: 3,
+            number_of_bits: 2
+        };
+
+        let mut map = HashMap::new();
+        map.insert('a', code_1);
+        map.insert('b', code_2);
+        
+        let result = reverse_encoding_map(&map);
+        assert_eq!(result.get(&code_1), Some(&'a'));
+        assert_eq!(result.get(&code_2), Some(&'b'));
+    }
+
+    #[test]
+    fn test_huffman_encoding_decode() {
+        let mut test_encoding = HuffmanEncoding {
+            data: Vec::new(),
+            number_of_bits: 0
+        };
+        test_encoding.add_value(14, 4);
+        let code_1 = HuffmanUnitCode {
+            code: 2,
+            number_of_bits: 2
+        };
+        let code_2 = HuffmanUnitCode {
+            code: 3,
+            number_of_bits: 2
+        };
+
+        let mut map = HashMap::new();
+        map.insert('a', code_1);
+        map.insert('b', code_2);
+        let result = test_encoding.decode(&map);
+        assert_eq!(result, "ab");
     }
 }
