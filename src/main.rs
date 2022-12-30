@@ -42,14 +42,8 @@ impl HuffmanEncoding {
     fn encode(&mut self, text: &String) {
 
         let map = self.get_huffman_encoding(text);
-        //let mut result = HuffmanEncoding {
-        //    data: Vec::new(),
-        //    number_of_bits: 0,
-        //    map: HashMap::new()
-        //};
         self.data = Vec::new();
         self.number_of_bits = 0;
-        //map = get_huffman_encoding(text);
 
         let mut unit_code: &HuffmanUnitCode;
         for c in text.chars() {
@@ -211,125 +205,13 @@ impl HuffmanUnitCode {
     }
 }
 
-//fn reverse_encoding_map(map: &HashMap<char, HuffmanUnitCode>) -> HashMap<HuffmanUnitCode, char> {
-//    let mut result = HashMap::new();
-//    for (symbol, code) in map {
-//        result.insert(code.clone(), symbol.clone());
-//    }
-//
-//    result
-//}
-
-//fn compute_frequencies(text: &String) -> HashMap<char, u32> {
-//    let mut result = HashMap::new();
-//    for c in text.chars() {
-//        let count = result.entry(c).or_insert(0);
-//        *count += 1;
-//    }
-//
-//    result
-//}
-//
-//fn get_huffman_leaves(text: &String) -> Vec<HuffmanNode> {
-//    let freqs = compute_frequencies(text);
-//    let mut leaves = Vec::new();
-//    for (symbol, freq) in freqs {
-//        leaves.push(HuffmanNode {
-//            weight: freq,
-//            symbol: Some(symbol),
-//            left: None,
-//            right: None
-//        });
-//    }
-//    leaves
-//}
-//
-//fn construct_huffman_tree(text: &String) -> Rc<HuffmanNode> {
-//    let mut leaves = get_huffman_leaves(text);
-//    quick_sort(&mut leaves, &|x,y| x.weight < y.weight);
-//    let mut intermediate_nodes = Vec::new();
-//    while leaves.len() > 0 || intermediate_nodes.len() > 1 {
-//        let one = take_smallest(&mut leaves, &mut intermediate_nodes);
-//        let two = take_smallest(&mut leaves, &mut intermediate_nodes);
-//        let new_node = HuffmanNode {
-//            weight: one.weight + two.weight,
-//            symbol: None,
-//            left: Some(Rc::new(one)),
-//            right: Some(Rc::new(two))
-//        };
-//        intermediate_nodes.push(new_node);
-//    }
-//
-//    Rc::new(intermediate_nodes.pop().unwrap())
-//}
-
 fn take_smallest(first: &mut Vec<HuffmanNode>, second: &mut Vec<HuffmanNode>) -> HuffmanNode {
     if first.is_empty() || (!second.is_empty() && first[0].weight > second[0].weight) {
         second.remove(0)
     } else {
         first.remove(0)
     }
-    //first.is_empty() || first[0].weight > second[0].weight ? second.pop_front().unwrap() : first.pop_front().unwrap()
 }
-
-//fn dfs_huffman_tree(node: Rc<HuffmanNode>, curr_unit_code: HuffmanUnitCode, result: &mut HashMap<char, HuffmanUnitCode>) {
-//    if node.left.is_none() && node.right.is_none() {
-//        result.insert(node.symbol.clone().unwrap(), curr_unit_code);
-//        return;
-//    }
-//
-//    if !node.left.is_none() {
-//        let mut left_unit_code = HuffmanUnitCode {
-//            code: curr_unit_code.code,
-//            number_of_bits: curr_unit_code.number_of_bits
-//        };
-//        left_unit_code.add_msb(0);
-//        dfs_huffman_tree(node.left.clone().unwrap(), left_unit_code, result);
-//    }
-//    if !node.right.is_none() {
-//        let mut right_unit_code = HuffmanUnitCode {
-//            code: curr_unit_code.code,
-//            number_of_bits: curr_unit_code.number_of_bits
-//        };
-//        right_unit_code.add_msb(1);
-//        dfs_huffman_tree(node.right.clone().unwrap(), right_unit_code, result);
-//    }
-//
-//}
-//
-//fn get_encoding_from_huffman_tree(tree: Rc<HuffmanNode>) -> HashMap<char, HuffmanUnitCode> {
-//    let mut result = HashMap::new();
-//    let curr_enc = HuffmanUnitCode {
-//        code: 0,
-//        number_of_bits: 0
-//    };
-//    dfs_huffman_tree(tree, curr_enc, &mut result);
-//    result
-//}
-//
-//fn get_huffman_encoding(text: &String) -> HashMap<char, HuffmanUnitCode> {
-//    let tree = construct_huffman_tree(text);
-//    let encoding = get_encoding_from_huffman_tree(tree);
-//    encoding
-//}
-//
-//fn encode_with_huffman(text: &String) -> HuffmanEncoding {
-//    let map = get_huffman_encoding(text);
-//    let mut result = HuffmanEncoding {
-//        data: Vec::new(),
-//        number_of_bits: 0,
-//        map: HashMap::new()
-//    };
-//    let mut unit_code: &HuffmanUnitCode;
-//    for c in text.chars() {
-//        unit_code = map.get(&c).expect("character not found in map!");
-//        result.add_value(unit_code.code, unit_code.number_of_bits.into());
-//    }
-//
-//    result.map = map;
-//    result
-//}
-
 
 
 fn main() {
